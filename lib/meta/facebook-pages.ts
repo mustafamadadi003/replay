@@ -39,13 +39,28 @@ export async function listFacebookPagesForToken(
   url.searchParams.set("access_token", accessToken);
 
   const response = await fetch(url.toString());
-  const data = await handleResponse<{
+  let data: {
     data?: Array<{
       id?: string;
       name?: string;
       access_token?: string;
     }>;
-  }>(response);
+  };
+  try {
+    data = await handleResponse(response);
+  } catch (error) {
+    // A Page access token has no /accounts edge; /me resolves to the Page itself.
+    const meUrl = new URL(`${facebookGraphBase()}/me`);
+    meUrl.searchParams.set("fields", "id,name");
+    meUrl.searchParams.set("access_token", accessToken);
+    const me = await handleResponse<{ id?: string; name?: string }>(
+      await fetch(meUrl.toString())
+    ).catch(() => null);
+    if (me?.id && me.name) {
+      return [{ id: me.id, name: me.name, accessToken }];
+    }
+    throw error;
+  }
 
   return (data.data ?? [])
     .filter((page): page is { id: string; name: string; access_token?: string } =>
