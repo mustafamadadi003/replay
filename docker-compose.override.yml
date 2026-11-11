@@ -1,0 +1,9 @@
+# Local-only helpers for Rahbin Reply development.
+# Docker Compose merges this automatically with docker-compose.yml.
+
+services:
+  mailpit:
+    image: axllent/mailpit:latest
+    ports:
+      - "1025:1025"
+      - "8025:8025"

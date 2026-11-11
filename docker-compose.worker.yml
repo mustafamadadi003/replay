@@ -1,0 +1,33 @@
+# Isolated DM worker for openreply-v2 (Linux node_modules inside the container).
+# Does not touch the live openreply worker on the host.
+#
+#   docker compose -f docker-compose.worker.yml up -d --build
+#   docker logs -f openreply-v2-worker
+
+services:
+  openreply-v2-worker:
+    image: node:20-bookworm-slim
+    container_name: openreply-v2-worker
+    working_dir: /app
+    volumes:
+      - ./:/app
+      - openreply_v2_node_modules:/app/node_modules
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@host.docker.internal:5432/openreply_v2
+      REDIS_URL: redis://host.docker.internal:6379/2
+      EMAIL_SERVER: smtp://host.docker.internal:1025
+      NEXTAUTH_URL: http://localhost:3001
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    command:
+      [
+        "sh",
+        "-c",
+        "npm ci && npx tsx -r dotenv/config worker/dm-worker.ts",
+      ]
+    restart: unless-stopped
+
+volumes:
+  openreply_v2_node_modules:
