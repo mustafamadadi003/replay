@@ -20,11 +20,23 @@ export default function KeywordInput({ keywords, onChange, max = 10 }: KeywordIn
   const [input, setInput] = useState("");
 
   function addKeyword(value: string) {
-    const trimmed = value.trim().toUpperCase();
-    if (!trimmed) return;
-    if (keywords.includes(trimmed)) return;
-    if (keywords.length >= max) return;
-    onChange([...keywords, trimmed]);
+    // Split on spaces/commas so "لینک link" becomes two triggers, not one
+    // impossible phrase that never matches a single-word comment.
+    const parts = value
+      .split(/[\s,]+/u)
+      .map((part) => part.trim())
+      .filter(Boolean);
+    if (parts.length === 0) return;
+
+    let next = [...keywords];
+    for (const part of parts) {
+      const normalized = part.toUpperCase();
+      if (!normalized || next.includes(normalized)) continue;
+      if (next.length >= max) break;
+      next.push(normalized);
+    }
+    if (next.length === keywords.length) return;
+    onChange(next);
     setInput("");
   }
 
