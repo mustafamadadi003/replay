@@ -18,8 +18,10 @@ const startedAt = new Date().toISOString();
 const HEARTBEAT_INTERVAL_MS = 30_000;
 // Polling safety net for comments that webhooks miss. Runs in the worker because
 // it must fire every few minutes and Vercel's free crons only run once a day.
+// Default 60s so "any post" campaigns stay automated without webhooks.
+// Railway may still override via COMMENT_POLL_INTERVAL_MS — keep that ≤ 60000.
 const POLL_INTERVAL_MS = Number(
-  process.env.COMMENT_POLL_INTERVAL_MS ?? 5 * 60_000
+  process.env.COMMENT_POLL_INTERVAL_MS ?? 60_000
 );
 // DB requeue must not wait on Meta comment listing — that path can hang or
 // soft-trip the circuit and leave PENDING stranded with an empty queue.

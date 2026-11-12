@@ -300,6 +300,8 @@ export interface InstagramUser {
 export interface InstagramComment {
   id: string;
   text: string;
+  /** Present on some Graph payloads even when `from` is sparse. */
+  username?: string;
   from?: {
     id: string;
     username?: string;
@@ -734,7 +736,7 @@ export async function getRecentMediaComments(
   const results: InstagramComment[] = [];
 
   const first = new URL(`${instagramGraphBase()}/${mediaId}/comments`);
-  first.searchParams.set("fields", "id,text,timestamp,from");
+  first.searchParams.set("fields", "id,text,username,timestamp,from");
   first.searchParams.set("order", "reverse_chronological");
   first.searchParams.set("limit", "50");
   first.searchParams.set("access_token", accessToken);

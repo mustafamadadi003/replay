@@ -383,8 +383,19 @@ async function sweepCampaign({
     // Keep only comments that (a) aren't the account's own, (b) match the
     // keyword, and (c) have no reply from the account owner yet.
     for (const c of comments) {
-      const authorId = c.from?.id;
-      if (!authorId || authorId === account.instagramId) continue;
+      // Some Graph pages omit from.id; keep a stable id so we still enqueue.
+      const authorId =
+        c.from?.id?.trim() ||
+        (c.from?.username ? `ig_user_${c.from.username}` : "") ||
+        (c.username ? `ig_user_${c.username}` : "");
+      if (!authorId) continue;
+      if (c.from?.id && c.from.id === account.instagramId) continue;
+      if (
+        (c.from?.username || c.username) &&
+        (c.from?.username || c.username) === account.username
+      ) {
+        continue;
+      }
 
       const matched = automation.matchAnyWord
         ? true
@@ -397,7 +408,15 @@ async function sweepCampaign({
       stat.matched += 1;
       // Dedup against owner public-replies used to require replies{from} on every
       // Graph page (very expensive). DmLog handling below is the source of truth.
-      candidates.push({ comment: c, mediaId });
+      candidates.push({
+        comment: {
+          ...c,
+          from: c.from?.id
+            ? c.from
+            : { id: authorId, username: c.from?.username || c.username },
+        },
+        mediaId,
+      });
     }
   }
 
