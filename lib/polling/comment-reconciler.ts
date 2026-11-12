@@ -45,18 +45,20 @@ import {
   tripAppRateLimit,
 } from "@/lib/meta/app-rate-limit-circuit";
 
-// Default lookback for "any post" campaigns. Specific-post campaigns use the
-// private-reply window below so backlog comments are not skipped.
-const LOOKBACK_HOURS = Number(process.env.COMMENT_POLL_LOOKBACK_HOURS ?? 6);
+// Default lookback for "any post" campaigns. Without Meta webhooks (common on
+// fresh Railway deploys), poll is the only path — 6h was too short and missed
+// real keyword comments on older posts in the recent feed.
+const LOOKBACK_HOURS = Number(process.env.COMMENT_POLL_LOOKBACK_HOURS ?? 48);
 // Prefer a short specific-post window for steady-state polling. Deep backlog
 // should come from webhooks + PENDING requeue, not re-reading days of comments.
 const SPECIFIC_POST_LOOKBACK_HOURS = Number(
-  process.env.COMMENT_POLL_SPECIFIC_LOOKBACK_HOURS ?? 24
+  process.env.COMMENT_POLL_SPECIFIC_LOOKBACK_HOURS ?? 48
 );
 // Hard cap across the whole campaign per sweep (not per media).
 const MAX_NEW_PER_SWEEP = Number(process.env.COMMENT_POLL_MAX_PER_SWEEP ?? 5);
-// For "any post" campaigns, how many recent posts to scan.
-const RECENT_MEDIA_LIMIT = Number(process.env.COMMENT_POLL_MEDIA_LIMIT ?? 3);
+// For "any post" campaigns, how many recent posts to scan. Topsii-style
+// accounts post often; 3 left keyword comments on older tiles invisible.
+const RECENT_MEDIA_LIMIT = Number(process.env.COMMENT_POLL_MEDIA_LIMIT ?? 15);
 // Cap Graph comments pulled per media in one sweep (≈1 page at limit=50).
 const MAX_COMMENTS_PER_MEDIA = Number(
   process.env.COMMENT_POLL_MAX_COMMENTS_PER_MEDIA ?? 50
