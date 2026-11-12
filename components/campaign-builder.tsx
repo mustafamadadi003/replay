@@ -518,11 +518,18 @@ export default function CampaignBuilder({ mode, campaignId }: CampaignBuilderPro
       : accounts.find((a) => a.id === selectedAccountId)?.username ?? "yourbrand";
 
   function handlePostSelect(
-    id: string,
+    id: string | null,
     url?: string,
     thumb?: string,
     caption?: string
   ) {
+    if (!id) {
+      setPostId(null);
+      setPostUrl(null);
+      setPostThumb(null);
+      setPostCaption("");
+      return;
+    }
     setPostId(id);
     setPostUrl(url ?? null);
     setPostThumb(thumb ?? null);
@@ -530,11 +537,21 @@ export default function CampaignBuilder({ mode, campaignId }: CampaignBuilderPro
   }
 
   function handleFacebookPostSelect(
-    id: string,
+    id: string | null,
     url?: string,
     thumb?: string,
     caption?: string
   ) {
+    if (!id) {
+      setFacebookPostId(null);
+      setFacebookPostUrl(null);
+      if (!bothChannels) handlePostSelect(null);
+      else {
+        setPostThumb(null);
+        setPostCaption("");
+      }
+      return;
+    }
     setFacebookPostId(id);
     setFacebookPostUrl(url ?? null);
     if (bothChannels) {
@@ -546,11 +563,21 @@ export default function CampaignBuilder({ mode, campaignId }: CampaignBuilderPro
   }
 
   function handleInstagramPostSelect(
-    id: string,
+    id: string | null,
     url?: string,
     thumb?: string,
     caption?: string
   ) {
+    if (!id) {
+      setInstagramPostId(null);
+      setInstagramPostUrl(null);
+      if (!bothChannels) handlePostSelect(null);
+      else {
+        setPostThumb(null);
+        setPostCaption("");
+      }
+      return;
+    }
     setInstagramPostId(id);
     setInstagramPostUrl(url ?? null);
     if (bothChannels) {

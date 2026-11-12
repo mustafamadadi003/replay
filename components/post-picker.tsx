@@ -34,8 +34,9 @@ interface PostPickerProps {
   usedPostIds?: Record<string, string>;
   /** Larger tiles for dual-channel / narrow layouts. */
   dense?: boolean;
+  /** Pass `null` to clear the current selection. */
   onSelect: (
-    postId: string,
+    postId: string | null,
     postUrl?: string,
     thumbUrl?: string,
     caption?: string
@@ -225,6 +226,18 @@ export default function PostPicker({
               {t("Already used")}
             </p>
           )}
+          {selectedPostId ? (
+            <div className="flex items-center justify-between gap-2 px-1">
+              <span className="text-xs text-muted">{t("Selected")}</span>
+              <button
+                type="button"
+                onClick={() => onSelect(null)}
+                className="text-xs font-medium text-accent hover:underline"
+              >
+                {t("Clear selection")}
+              </button>
+            </div>
+          ) : null}
           <div
             className={`grid gap-2 overflow-x-hidden overflow-y-auto p-1 ${
               dense
@@ -253,9 +266,13 @@ export default function PostPicker({
                 <button
                   key={post.id}
                   type="button"
-                  onClick={() =>
-                    onSelect(post.id, post.permalink, thumb, post.caption)
-                  }
+                  onClick={() => {
+                    if (isSelected) {
+                      onSelect(null);
+                      return;
+                    }
+                    onSelect(post.id, post.permalink, thumb, post.caption);
+                  }}
                   onMouseEnter={() => setHoveredId(post.id)}
                   onMouseLeave={() =>
                     setHoveredId((cur) => (cur === post.id ? null : cur))
