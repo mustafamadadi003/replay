@@ -223,7 +223,8 @@ export default function CampaignBuilder({ mode, campaignId }: CampaignBuilderPro
   const keywords = useMemo(
     () =>
       keywordText
-        .split(",")
+        // Comma or whitespace both split — "لینک link" and "لینک, link" work.
+        .split(/[,\s]+/u)
         .map((k) => k.trim())
         .filter(Boolean),
     [keywordText]
